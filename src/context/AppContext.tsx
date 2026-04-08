@@ -14,7 +14,7 @@ interface AppContextType {
     removerProduto: (id: string) => void;
     atualizarPreco: (id: string, novoPreco: number) => void;
     atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => void;
-    finalizarVenda: (itensVendidos: {id:string; qtdVendidas: number}[]) => void;
+    finalizarVenda: (itensVendidos: { id:string; qtdVendida: number }[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -47,7 +47,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         }));
     }
 
-    const finalizarVenda = (itensVendidos: {id: string; qtdVendida: number}[]) => {
+    const finalizarVenda = (itensVendidos: { id: string; qtdVendida: number }[]) => {
         setProdutos((prev) => prev.map((p) => {
             const itemVendido = itensVendidos.find(item => item.id === p.id);
             if (itemVendido && p.tipo === 'produto'){

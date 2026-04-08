@@ -1,8 +1,13 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
+import { useAppContext } from "../../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const ListaProdutos = () => {
+    const { produtos, removerProduto} = useAppContext();
+    const navigate = useNavigate();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [produtoParaDeletar, setProdutoParaDeletar] = useState<string | null>(null);
 
@@ -12,25 +17,37 @@ const ListaProdutos = () => {
     };
 
     const handleConfirmDelete = () => {
-        console.log("Deletando produto ID:", produtoParaDeletar);
+        if (produtoParaDeletar) {
+          removerProduto(produtoParaDeletar);
+        }
         setIsModalOpen(false);
         setProdutoParaDeletar(null);
     };
 
-    const produtosFake = [
-    { id: "005", nome: "Bateria Sony", preco: 25.00, tipo: "produto", qtd: 50 },
-    { id: "001", nome: "Limpeza de Relógio", preco: 40.00, tipo: "servico", qtd: 0 },
-    { id: "002", nome: "Pulseira de Couro", preco: 80.00, tipo: "produto", qtd: 15 },
-    { id: "003", nome: "Relógio Casio Prata", preco: 150.00, tipo: "produto", qtd: 12 },
-  ];
+    const handleEditar = (id: string) => {
+      navigate('/cadastro', {state: {idParaEditar: id}});
+    }
 
   return (
     <main className="pt-32 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Lista de Produtos e Serviços</h2>
 
+        <div className="hidden md:flex items-center justify-between px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4 gap-4">
+          <div className="flex items-center gp-6 flex-1">
+            <span className="w-1/3">Nome</span>
+            <span className="w-1/6">ID</span>
+            <span className="w-1/6">Valor</span>
+            <div className="flex w-1/4 justify-between gap-6">
+              <span className="-1/2">Tipo</span>
+              <span className="w-1/2">Quantidade</span>
+            </div>
+          </div>
+          <span className="w-27.5 text-right">Ações</span>
+        </div>
+
         <div className="flex flex-col gap-4">
-          {produtosFake.map((item) => (
+          {produtos.map((item) => (
             <div 
               key={item.id} 
               className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg gap-4"
@@ -65,9 +82,9 @@ const ListaProdutos = () => {
                 </div>
               </div>
 
-              {/* Botões de Ação */}
               <div className="flex items-center justify-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 mt-2 md:mt-0">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm"
+                onClick={() => handleEditar(item.id)}>
                   Editar
                 </Button>
                 <Button 
@@ -81,6 +98,9 @@ const ListaProdutos = () => {
               </div>
             </div>
           ))}
+          {produtos.length === 0 && (
+            <div className="text-center text-gray-500 py-10">Nenhum produto cadastrado</div>
+          )}
         </div>
       </div>
 
