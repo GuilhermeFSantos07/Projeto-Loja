@@ -5,16 +5,106 @@ import Input from "../components/Input";
 import ProductDetailsCard from "../components/ProductDetailsCard";
 import Select from "../components/Select";
 import ConfirmModal from "../components/ConfirmModal";
+import { useAppContext, type Produto } from "../../context/AppContext";
 
+interface ItemCarrinho extends Produto {
+  qtdVendida: number;
+}
 
 const Vendas = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {produtos, finalizarVenda} =  useAppContext();
 
-  const handleOpenRemoveModal = () => setIsModalOpen(true);
-  const handleConfirmRemove = () => {
-    console.log("Item removido do carrinho");
-    setIsModalOpen(false);
+  const [busca, setBusca] = useState("");
+  const [produtoSeleciondo, setProdutoSelecionado] = useState<Produto | undefined>(undefined);
+
+  const [qtdDesejada, setQtdDesejada] = useState(1);
+
+  const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
+  const [formaPagmento, setFormaPagamento] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemParaRemover, setItemParaRemover] = useState <string | null>(null);
+
+  const handleBuscar = () =>{
+    const encontrado = produtos.find(p => p.id === busca || p.nome.toLocaleLowerCase() === busca.toLocaleLowerCase());
+    if (encontrado) {
+      setProdutoSelecionado(encontrado);
+    }else{
+      alert("Produto não encontrado");
+      setProdutoSelecionado(undefined);
+    }
+  };
+
+  const handleAdicionarAoCarrinho = () => {
+    if (!produtoSeleciondo) return;
+
+    const qtd = Number(qtdDesejada);
+
+    if (qtd <= 0){
+      alert("A quantidade deve ser maior que zero");
+      return;
+    }
+
+    if (produtoSeleciondo.tipo === 'produto' && produtoSeleciondo.qtd <= 0){
+      alert("Produto sem estoque");
+      return;
+    }
+
+    const itemJaExiste = carrinho.find(item => item.id === produtoSeleciondo.id);
+
+    if (itemJaExiste){
+      const novaQtdTotal = itemJaExiste.qtdVendida + qtd;
+
+      if(produtoSeleciondo.tipo === 'produto' && novaQtdTotal >= produtoSeleciondo.qtd){
+        alert("Estoque insuficiente para adicionar mais produtos");
+        return;
+      }
+
+      setCarrinho(carrinho.map(item =>
+        item.id === produtoSeleciondo.id
+        ? {...item, qtdVendida: novaQtdTotal}
+        : item
+      ));
+    }else{
+      setCarrinho([...carrinho, {...produtoSeleciondo, qtdVendida: qtd}]);
+    }
+
+    setBusca("");
+    setProdutoSelecionado(undefined);
+    setQtdDesejada(1);
   }
+
+  const handleAbrirModalRemover = (id: string) => {
+    setItemParaRemover(id);
+    setIsModalOpen(true);
+  }
+
+  const handleConfirmarRemocao = () => {
+    if (itemParaRemover){
+      setCarrinho(carrinho.filter(item => item.id !== itemParaRemover));
+    }
+    setIsModalOpen(false);
+    setItemParaRemover(null);
+  }
+
+  const handleFinalizarVenda = () => {
+    if(carrinho.length === 0){
+      alert("O carrinho está vazio");
+      return;
+    }
+    if(!formaPagmento){
+      alert("Selecione uma forma de pagamento");
+      return;
+    }
+
+    finalizarVenda(carrinho, formaPagmento, totalCompra);
+
+    alert("Venda finalizada com sucesso. Estoque atualizado.");
+    setCarrinho([]);
+    setFormaPagamento("");
+  };
+
+  const totalCompra = carrinho.reduce((acc, item) => acc + (item.preco * item.qtdVendida), 0);
 
   const paymentOptions = [
     { value: "dinheiro", label: "Dinheiro" },
@@ -22,50 +112,83 @@ const Vendas = () => {
     { value: "debito", label: "Cartão de Débito" },
     { value: "credito", label: "Cartão de Crédito" },
   ];
+  
 
   return (
     <main className="pt-32 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        
-        <section className="w-full lg:w-1/2 flex flex-col gap-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Pesquisar Produto</h2>
-          
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <Input label="ID ou Nome" placeholder="Digite para buscar..." />
+        <section className="w-full lg:w-1/2 flex flex-col gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-4">
+            <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Pesquisar Produto</h2>
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Input 
+                  label="ID ou Nome" 
+                  placeholder="Digite para buscar..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
+                />
+              </div>
+              <Button variant="outline" onClick={handleBuscar}>Buscar</Button>
             </div>
-            <Button variant="primary">Buscar</Button>
           </div>
-
-          <ProductDetailsCard />
-
-          <div className="flex gap-2 items-end mt-4">
-            <div className="w-1/3">
-              <Input label="Qtd." type="number" defaultValue={1} min={1} />
-            </div>
-            <div className="flex-1">
-              <Button variant="primary" fullWidth>Adicionar ao Carrinho</Button>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-4">
+            <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Detalhes do Item</h2>
+            <ProductDetailsCard product={produtoSeleciondo}/>
+            <div className="flex gap-4 items-end mt-2">
+              <div className="w-32">
+                <Input
+                  label="Qtd:"
+                  type="number"
+                  min={1}
+                  value={qtdDesejada}
+                  onChange={(e) => setQtdDesejada(parseInt(e.target.value))}
+                  disabled={!produtoSeleciondo}
+                />
+              </div>
+              <Button
+                variant="primary"
+                className="flex-1"
+                disabled={!produtoSeleciondo}
+                onClick={handleAdicionarAoCarrinho}
+              >
+                Adicionar ao Carrinho
+              </Button>
             </div>
           </div>
         </section>
 
         <section className="w-full lg:w-1/2 flex flex-col gap-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Carrinho de Compras</h2>
-          
+          <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Carrinho de Compras</h2>   
           <div className="flex flex-col gap-3 min-h-62.5 max-h-100 overflow-y-auto">
-            <CartItem onRemoveItem={handleOpenRemoveModal}/>
+            {carrinho.length === 0 ? (
+              <div className="text-gray-400 text-center mt-10">O carrinho está vazio</div>
+            ): (
+              carrinho.map(item => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  onRemoveItem={handleAbrirModalRemover}
+                />
+              ))
+            )}
           </div>
 
-          <div className="border-t pt-4 flex flex-col gap-4">
-            <div className="flex justify-between items-center text-xl font-bold">
-              <span>Total:</span>
-              <span className="text-amber-700">R$ 300,00</span>
+          <div className="border-t border-gray-200 pt-4 flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-amber-50 p-4 rounded-mb border border-amber-100">
+              <span className="text-lg font-semibold text-gray-700">Total:</span>
+              <span className="text-2xl font-bold text-amber-700">
+                R$ {totalCompra.toFixed(2).replace(".", ",")}
+              </span>
             </div>
             <Select 
               label="Forma de Pagamento" 
-              options={paymentOptions} 
+              options={paymentOptions}
+              value={formaPagmento}
+              onChange={(e) => setFormaPagamento(e.target.value)} 
             />
-            <Button variant="success" size="lg" fullWidth>
+            <Button variant="success" size="lg" className="w-full mt-2" onClick={handleFinalizarVenda}>
               Finalizar Venda
             </Button>
           </div>
@@ -76,7 +199,7 @@ const Vendas = () => {
         title="Remover do Carrinho"
         message="Tem certeza que deseja remover este item da venda atual?"
         onCancel={() => setIsModalOpen(false)}
-        onConfirm={handleConfirmRemove}
+        onConfirm={handleConfirmarRemocao}
       />
     </main>
   );

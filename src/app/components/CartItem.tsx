@@ -5,20 +5,20 @@ interface CartItemProps {
     id: string;
     nome: string;
     preco: number;
-    qtdVenida: number;
+    qtdVendida: number;
   };
   onRemoveItem: (id: string) => void;
 }
 
 const CartItem = ({item, onRemoveItem}: CartItemProps) => {
-  const totalItem = item.preco * item.qtdVenida;
+  const totalItem = item.preco * (item.qtdVendida || 0);
 
   return (
     <div className="flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-200">
       <div className="flex flex-col">
         <span className="font-semibold text-gray-900">{item.nome}</span>
         <span className="text-sm text-gray-500">
-          {item.qtdVenida}x R${item.preco.toFixed(2).replace(".", ",")}
+          {item.qtdVendida}x R$ {item.preco.toFixed(2).replace(".", ",")}
         </span>
       </div>
       

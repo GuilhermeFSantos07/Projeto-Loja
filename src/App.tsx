@@ -4,6 +4,7 @@ import CadastroAtualizacao from "./app/view/CadastroAtualizacao";
 import Vendas from "./app/view/Vendas";
 import ListaProdutos from "./app/view/ListaProdutos";
 import { AppProvider } from "./context/AppContext";
+import Relatorios from "./app/view/Relatorios";
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
             <Route path="/vendas" element={<Vendas/>}/>
             <Route path="/cadastro" element={<CadastroAtualizacao/>}/>
             <Route path="/produtos" element={<ListaProdutos/>}/>
-            <Route path="/relatorios" element={<div className="pt-32 text-center text-xl font-bold text-gray-500">Tela de Relatórios em breve...</div>} />
+            <Route path="/relatorios" element={<Relatorios/>} />
           </Routes>
         </div>
       </BrowserRouter>

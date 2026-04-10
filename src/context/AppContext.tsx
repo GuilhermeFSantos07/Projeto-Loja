@@ -8,13 +8,29 @@ export type Produto = {
     qtd: number;
 };
 
+export type ItemVenda = {
+    id: string;
+    nome: string;
+    preco: number;
+    qtdVendida: number;
+};
+
+export type Venda = {
+    id: string;
+    data: string;
+    itens: ItemVenda[]
+    valorTotal: number;
+    metodoPagamento: string;
+};
+
 interface AppContextType {
     produtos: Produto[];
+    vendasRealizadas: Venda[];
     adicionarProduto: (produto: Produto) => void;
     removerProduto: (id: string) => void;
     atualizarPreco: (id: string, novoPreco: number) => void;
     atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => void;
-    finalizarVenda: (itensVendidos: { id:string; qtdVendida: number }[]) => void;
+    finalizarVenda: (itensVendidos: ItemVenda[], metodo: string, total: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -22,10 +38,12 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({children}: {children: ReactNode}) => {
     const [produtos, setProdutos] = useState<Produto[]>([
         {id: "005", nome: "Bateria Sony", preco: 25.00, tipo: "produto", qtd: 50},
-        {id: "001", nome: "Limpez de Relógio", preco: 40.00, tipo: "servico", qtd: 0},
+        {id: "001", nome: "Limpeza de Relógio", preco: 40.00, tipo: "servico", qtd: 0},
         {id: "002", nome: "Pulseira de Couro", preco: 80.00, tipo: "produto", qtd: 15},
         {id: "003", nome: "Relógio Casio Prata", preco: 150.00, tipo: "produto", qtd: 12},
     ]);
+
+    const [vendasRealizadas, setVendasRealizadas] = useState<Venda[]>([]);
 
     const adicionarProduto = (produto: Produto) => {
         setProdutos((prev) => [...prev, produto].sort((a, b) => a.nome.localeCompare(b.nome)));
@@ -47,18 +65,28 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         }));
     }
 
-    const finalizarVenda = (itensVendidos: { id: string; qtdVendida: number }[]) => {
+    const finalizarVenda = (itens: ItemVenda[], metodo: string, total: number) => {
         setProdutos((prev) => prev.map((p) => {
-            const itemVendido = itensVendidos.find(item => item.id === p.id);
+            const itemVendido = itens.find(item => item.id === p.id);
             if (itemVendido && p.tipo === 'produto'){
                 return {...p, qtd: p.qtd - itemVendido.qtdVendida};
             }
             return p;
         }));
+
+        const novaVenda: Venda = {
+            id: `V-${Math.floor(1000 + Math.random() * 9000)}`,
+            data: new Date().toLocaleString('pt-BR'),
+            itens: [...itens],
+            metodoPagamento: metodo,
+            valorTotal: total
+        };
+
+        setVendasRealizadas((prev) => [novaVenda, ...prev]);
     };
 
     return (
-        <AppContext.Provider value={{produtos, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda}}>
+        <AppContext.Provider value={{produtos, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda, vendasRealizadas}}>
             {children}
         </AppContext.Provider>
     );
