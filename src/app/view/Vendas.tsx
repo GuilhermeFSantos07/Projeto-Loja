@@ -12,17 +12,17 @@ const Vendas = () => {
     produtos, finalizarVenda,
     carrinho, setCarrinho,
     formaPagamento, setFormaPagamento,
-    desconto, setDesconto
+    desconto, setDesconto,
+    buscaVendas, setBuscaVendas
   } = useAppContext ();
 
-  const [busca, setBusca] = useState("");
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | undefined>(undefined);
   const [qtdDesejada, setQtdDesejada] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemParaRemover, setItemParaRemover] = useState <string | null>(null);
 
   const handleBuscar = () =>{
-    const encontrado = produtos.find(p => p.id === busca || p.nome.toLocaleLowerCase() === busca.toLocaleLowerCase());
+    const encontrado = produtos.find(p => p.id === buscaVendas || p.nome.toLocaleLowerCase() === buscaVendas.toLocaleLowerCase());
     if (encontrado) {
       setProdutoSelecionado(encontrado);
       setQtdDesejada(1);
@@ -49,7 +49,6 @@ const Vendas = () => {
 
     if (itemJaExiste){
       const novaQtdTotal = itemJaExiste.qtdVendida + qtd;
-
       if(produtoSelecionado.tipo === 'produto' && novaQtdTotal >= produtoSelecionado.qtd){
         return alert("Estoque insuficiente para adicionar mais produtos");
       }
@@ -63,9 +62,26 @@ const Vendas = () => {
       setCarrinho([...carrinho, {...produtoSelecionado, qtdVendida: qtd}]);
     }
 
-    setBusca("");
+    setBuscaVendas("");
     setProdutoSelecionado(undefined);
     setQtdDesejada(1);
+  }
+
+  const handleAlterarQuantidadeItem = (id: string, delta: number) => {
+    setCarrinho((prev) => prev.map(item => {
+      if (item.id === id) {
+        const novaQtd = item.qtdVendida + delta;
+        if (novaQtd < 1) return item;
+
+        const produtoOriginal = produtos.find (p => p.id === item.id);
+        if(produtoOriginal && produtoOriginal.tipo === 'produto' && novaQtd > produtoOriginal.qtd) {
+          alert("Quantidade máxima em estoque atingida");
+          return item;
+        }
+        return {...item, qtdVendida: novaQtd};
+      }
+      return item;
+    }))
   }
 
   const handleAbrirModalRemover = (id: string) => {
@@ -124,8 +140,8 @@ const Vendas = () => {
                 <Input 
                   label="ID ou Nome" 
                   placeholder="Digite para buscar..."
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
+                  value={buscaVendas}
+                  onChange={(e) => setBuscaVendas(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
                 />
               </div>
@@ -169,6 +185,7 @@ const Vendas = () => {
                   key={item.id}
                   item={item}
                   onRemoveItem={handleAbrirModalRemover}
+                  onAlterarQtd={handleAlterarQuantidadeItem}
                 />
               ))
             )}
@@ -187,7 +204,7 @@ const Vendas = () => {
                     type="number"
                     min={0}
                     step="1.00"
-                    value={desconto || ""}
+                    value={desconto === 0 ? "" : desconto}
                     onChange={(e) => setDesconto(parseFloat(e.target. value) || 0)}
                   />
                 </div>

@@ -24,6 +24,13 @@ export type Venda = {
     desconto: number;
 };
 
+export type FormCadastro = {
+    nome: string;
+    preco: string;
+    tipo: string;
+    qtd: string;
+};
+
 interface AppContextType {
     produtos: Produto[];
     vendasRealizadas: Venda[];
@@ -34,6 +41,13 @@ interface AppContextType {
     setFormaPagamento: React.Dispatch<React.SetStateAction<string>>;
     desconto: number;
     setDesconto: React.Dispatch<React.SetStateAction<number>>;
+
+    buscaVendas: string;
+    setBuscaVendas: React.Dispatch<React.SetStateAction<string>>;
+    buscaAtualizacao: string;
+    setBuscaAtualizacao: React.Dispatch<React.SetStateAction<string>>;
+    formCadastro: FormCadastro;
+    setFormCadastro: React.Dispatch<React.SetStateAction<FormCadastro>>;
 
     adicionarProduto: (p: Produto) => void;
     removerProduto: (id: string) => void;
@@ -58,6 +72,12 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const [carrinho, setCarrinho] = useState<ItemVenda[]>([]);
     const [formaPagamento, setFormaPagamento] = useState<string>("");
     const [desconto, setDesconto] = useState<number>(0);
+
+    const [buscaVendas, setBuscaVendas] = useState("")
+    const [buscaAtualizacao, setBuscaAtualizacao] = useState("")
+    const [formCadastro, setFormCadastro] = useState<FormCadastro>({
+        nome: "", preco: "", tipo: "produto", qtd: ""
+    })
 
     useEffect (() => {
         localStorage.setItem("@pdv:produtos", JSON.stringify(produtos));
@@ -111,7 +131,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     return (
         <AppContext.Provider 
             value={{
-                produtos, vendasRealizadas, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda, carrinho, setCarrinho, formaPagamento, setFormaPagamento, desconto, setDesconto
+                produtos, vendasRealizadas, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda, carrinho, setCarrinho, formaPagamento, setFormaPagamento, desconto, setDesconto, buscaVendas, setBuscaVendas, buscaAtualizacao, setBuscaAtualizacao, formCadastro, setFormCadastro
                 }}
             >
             {children}

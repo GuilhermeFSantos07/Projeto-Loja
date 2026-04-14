@@ -33,66 +33,31 @@ const ListaProdutos = () => {
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Lista de Produtos e Serviços</h2>
 
-        <div className="hidden md:flex items-center justify-between px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4 gap-4">
-          <div className="flex items-center gp-6 flex-1">
-            <span className="w-1/3">Nome</span>
-            <span className="w-1/6">ID</span>
-            <span className="w-1/6">Valor</span>
-            <div className="flex w-1/4 justify-between gap-6">
-              <span className="-1/2">Tipo</span>
-              <span className="w-1/2">Quantidade</span>
-            </div>
-          </div>
-          <span className="w-27.5 text-right">Ações</span>
+        <div className="min-w-175 grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4">
+            <span>Código</span>
+            <span>Nome</span>
+            <span>Valor</span>
+            <span>Quantidade</span>
+            <span>Ações</span>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="min-w-175 flex flex-col gap-3">
           {produtos.map((item) => (
             <div 
               key={item.id} 
-              className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg gap-4"
+              className="grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg items-center transition-colors hover:bg-gray-100"
             >
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 flex-1">
-                <div className="flex flex-col w-full md:w-1/3">
-                  <span className="text-sm text-gray-500 font-medium md:hidden">Nome</span>
-                  <span className="font-bold text-gray-900">{item.nome}</span>
-                </div>
-                
-                <div className="flex flex-col w-full md:w-1/6">
-                  <span className="text-sm text-gray-500 font-medium md:hidden">ID</span>
-                  <span className="text-gray-700">{item.id}</span>
-                </div>
-
-                <div className="flex flex-col w-full md:w-1/6">
-                  <span className="text-sm text-gray-500 font-medium md:hidden">Valor</span>
-                  <span className="text-amber-700 font-bold">
-                    R$ {item.preco.toFixed(2).replace(".", ",")}
-                  </span>
-                </div>
-
-                <div className="flex justify-between md:justify-start w-full md:w-1/4 gap-6">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-gray-500 font-medium md:hidden">Tipo</span>
-                    <span className="text-gray-700 capitalize">{item.tipo}</span>
-                  </div>
-                  <div className="flex flex-col text-right md:text-left">
-                    <span className="text-sm text-gray-500 font-medium md:hidden">Qtd.</span>
-                    <span className="text-gray-900 font-semibold">{item.qtd}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 mt-2 md:mt-0">
-                <Button variant="outline" size="sm"
-                onClick={() => handleEditar(item.id)}>
-                  Editar
-                </Button>
-                <Button 
-                  variant="danger" 
-                  size="icon" 
-                  title="Excluir"
-                  onClick={() => handleOpenDeleteModal(item.id)}
-                >
+              <span className="text-gray-700 text-sm">{item.id}</span>
+              <span className="font-bold text-gray-900 truncate" title={item.nome}>{item.nome}</span>
+              <span className="text-amber-700 font-bold">
+                R$ {item.preco.toFixed(2).replace(".",",")}
+              </span>
+              <span className="text-gray-900 font-semibold">
+                {item.tipo === 'servico' ? '-' : `${item.qtd} und`}
+              </span>
+              <div className="flex items-center justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleEditar(item.id)}>Editar</Button>
+                <Button variant="danger" size="icon" title="Excluir" onClick={() => handleOpenDeleteModal(item.id)}>
                   <span className="font-bold">X</span>
                 </Button>
               </div>

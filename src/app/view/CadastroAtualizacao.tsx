@@ -6,16 +6,32 @@ import { type Produto, useAppContext } from "../../context/AppContext";
 import { useLocation } from "react-router-dom";
 
 const CadastroAtualizacao = () => {
-    const {produtos, adicionarProduto, atualizarPreco, atualizarEstoque} = useAppContext ();
+    const {
+        produtos, 
+        adicionarProduto, 
+        atualizarPreco, 
+        atualizarEstoque,
+        formCadastro,
+        setFormCadastro,
+        buscaAtualizacao,
+        setBuscaAtualizacao
+    } = useAppContext ();
+
     const location = useLocation ();
 
-    const [tipoCadastro, setTipoCadastro] = useState("produto");
-    const [nomeCadastro, setNomeCadastro] = useState("");
-    const [precoCadastro, setPrecoCadastro] = useState("");
-    const [qtdCadastro, setQtdCadastro] = useState("")
+    const [produtoEditando, setProdutoEditando] = useState<Produto | null>(null);
+    const [novoPreco, setNovoPreco] = useState("");
+    const [inputQtd, setInputQtd] = useState("");
+
+    useEffect (() => {
+        if (location.state?.idParaEditar){
+            setBuscaAtualizacao(location.state.idParaEditar);
+            handleBuscarParaEdicao(location.state.idParaEditar);
+        }
+    }, [location]);
 
     const handleCadastrar = () => {
-        if(!nomeCadastro || !precoCadastro) {
+        if(!formCadastro.nome || !formCadastro.preco) {
             alert ("Preencha pelo menos o nome e o preço.");
             return;
         }
@@ -24,30 +40,16 @@ const CadastroAtualizacao = () => {
 
         adicionarProduto({
             id: novoId,
-            nome: nomeCadastro,
-            preco: parseFloat(precoCadastro),
-            tipo: tipoCadastro as "produto" | "servico",
-            qtd: tipoCadastro === "produto" ? parseInt(qtdCadastro || "0") : 0,
+            nome: formCadastro.nome,
+            preco: parseFloat(formCadastro.preco),
+            tipo: formCadastro.tipo as "produto" | "servico",
+            qtd: formCadastro.tipo === "produto" ? parseInt(formCadastro.qtd || "0") : 0,
         });
 
         alert(`Cadastrado com sucesso. Id gerado: ${novoId}`);
 
-        setNomeCadastro("");
-        setPrecoCadastro("");
-        setQtdCadastro("");
+        setFormCadastro({nome: "", preco: "", tipo: "produto", qtd: ""});
     }
-
-    const [buscaId, setBuscaId] = useState("");
-    const [produtoEditando, setProdutoEditando] = useState<Produto | null>(null);
-
-    const [novoPreco, setNovoPreco] = useState("");
-    const [inputQtd, setInputQtd] = useState("");
-
-    useEffect (() => {
-        if (location.state?.idParaEditar){
-            handleBuscarParaEdicao(location.state.idParaEditar);
-        }
-    }, [location]);
 
     const handleBuscarParaEdicao = (idBuscado: string) => {
         const encontrado = produtos.find(p => p.id === idBuscado || p.nome.toLowerCase() === idBuscado.toLowerCase());
@@ -84,7 +86,7 @@ const CadastroAtualizacao = () => {
 
     return (
         <main className="pt-32 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
-            <div className="flex flex-col lg:flex-row gap-8 items-center">
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
                 <section className="w-full lg:w-1/2 flex flex-col gap-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                     <h2 className="text-xl font-semibold text-gray-800 border-b pb-2 text-center lg:text-left">
                         Cadastro
@@ -93,37 +95,37 @@ const CadastroAtualizacao = () => {
                         <Input 
                             label="Nome:" 
                             placeholder="Ex: Relogio..."
-                            value={nomeCadastro}
-                            onChange={(e) => setNomeCadastro(e.target.value)}
+                            value={formCadastro.nome}
+                            onChange={(e) => setFormCadastro({...formCadastro, nome: e.target.value})}
                         />
                         <Input 
-                            label="Preço:" 
+                            label="Preço (R$):" 
                             type="number"
                             step="1.00" 
                             placeholder="R$ 0,00"
-                            value={precoCadastro}
-                            onChange={(e) => setPrecoCadastro(e.target.value)}
+                            value={formCadastro.preco}
+                            onChange={(e) => setFormCadastro({...formCadastro, preco: e.target.value})}
                         />
                         <Select
                             label="Tipo: "
                             options={tipoOptions}
-                            value={tipoCadastro}
-                            onChange={(e) => setTipoCadastro(e.target.value)}
+                            value={formCadastro.tipo}
+                            onChange={(e) => setFormCadastro({...formCadastro, tipo: e.target.value})}
                         />
-                        {tipoCadastro === "produto" && (
+                        {formCadastro.tipo === "produto" && (
                             <Input 
                                 label="Quantidade inicial:"
                                 type="number" 
                                 min={0} 
-                                value={qtdCadastro}
-                                onChange={(e) => setQtdCadastro(e.target.value)}
+                                value={formCadastro.qtd}
+                                onChange={(e) => setFormCadastro({...formCadastro, qtd: e.target.value})}
                             />
                         )}
                         <div className="mt-4 flex justify-center">
                             <Button 
                                 variant="primary" 
                                 size="lg" 
-                                className="w-full sm:w-1/2 rounded-full"
+                                className="w-auto px-10 rounded-md"
                                 onClick={handleCadastrar}>
                                 Cadastrar
                             </Button>
@@ -139,11 +141,12 @@ const CadastroAtualizacao = () => {
                             <Input 
                                 label="ID ou Nome:" 
                                 placeholder="Busque para atualizar..."
-                                value={buscaId}
-                                onChange={(e) => setBuscaId(e.target.value)}
+                                value={buscaAtualizacao}
+                                onChange={(e) => setBuscaAtualizacao(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleBuscarParaEdicao(buscaAtualizacao)}
                             />
                         </div>
-                        <Button variant="primary" onClick={() => handleBuscarParaEdicao(buscaId)}>
+                        <Button variant="primary" onClick={() => handleBuscarParaEdicao(buscaAtualizacao)}>
                             Buscar
                         </Button>
                     </div>
@@ -152,21 +155,21 @@ const CadastroAtualizacao = () => {
                             <p>Busque um item acima para carregar os dados</p>
                         </div>
                     ) : (
-                        <div className="bg-amber-50/50 border border-amber-200 rounded-md p-5 flex flex-col gap-4">
-                            <div className="flex justify-between items-center border-b border-amber-200 pb-2">
+                        <div className="bg-blue-50/50 border border-blue-200 rounded-md p-5 flex flex-col gap-4">
+                            <div className="flex justify-between items-center border-b border-blue-200 pb-2">
                                 <div>
                                     <h3 className="text-gray-900 text-lg">{produtoEditando.nome}</h3>
                                     <p className="text-sm text-gray-500">ID: {produtoEditando.id} | Tipo: {produtoEditando.tipo}</p>
                                 </div>
                                 {produtoEditando.tipo === 'produto' && (
-                                    <div className="text-right">
+                                    <div className="text-right bg-white px-3 py-1 rounded border border-gray-200 shadow-sm">
                                         <span className="text-xs text-gray-500 uppercase font-bold block">Estoque Atual:</span>
                                         <span className="text-2xl font-bold text-gray-900">{produtoEditando.qtd}</span>
                                     </div>
                                 )}
                             </div>
-                            <div>
-                                <div>
+                            <div className="flex gap-2 items-end mt-2">
+                                <div className="flex-1">
                                     <Input
                                         label="Novo Preço (R$)"
                                         type="number"
@@ -178,7 +181,7 @@ const CadastroAtualizacao = () => {
                                 <Button variant="outline" onClick={handleSalvarPreco}>Atualizar</Button>
                             </div>
                             {produtoEditando.tipo === 'produto' && (
-                                <div className="flex gap-2 items-end mt-2 pt-4 border-t border-amber-200/50">
+                                <div className="flex gap-2 items-end mt-2 pt-4 border-t border-blue-200/50">
                                     <div className="flex-1">
                                         <Input
                                             label="Ajustar Quantidade"
