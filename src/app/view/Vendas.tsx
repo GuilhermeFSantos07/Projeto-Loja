@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Button from "../components/Button";
 import CartItem from "../components/CartItem";
 import Input from "../components/Input";
@@ -7,21 +7,17 @@ import Select from "../components/Select";
 import ConfirmModal from "../components/ConfirmModal";
 import { useAppContext, type Produto } from "../../context/AppContext";
 
-interface ItemCarrinho extends Produto {
-  qtdVendida: number;
-}
-
 const Vendas = () => {
-  const {produtos, finalizarVenda} =  useAppContext();
+  const {
+    produtos, finalizarVenda,
+    carrinho, setCarrinho,
+    formaPagamento, setFormaPagamento,
+    desconto, setDesconto
+  } = useAppContext ();
 
   const [busca, setBusca] = useState("");
-  const [produtoSeleciondo, setProdutoSelecionado] = useState<Produto | undefined>(undefined);
-
+  const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | undefined>(undefined);
   const [qtdDesejada, setQtdDesejada] = useState(1);
-
-  const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
-  const [formaPagmento, setFormaPagamento] = useState("");
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemParaRemover, setItemParaRemover] = useState <string | null>(null);
 
@@ -29,6 +25,7 @@ const Vendas = () => {
     const encontrado = produtos.find(p => p.id === busca || p.nome.toLocaleLowerCase() === busca.toLocaleLowerCase());
     if (encontrado) {
       setProdutoSelecionado(encontrado);
+      setQtdDesejada(1);
     }else{
       alert("Produto não encontrado");
       setProdutoSelecionado(undefined);
@@ -36,37 +33,34 @@ const Vendas = () => {
   };
 
   const handleAdicionarAoCarrinho = () => {
-    if (!produtoSeleciondo) return;
+    if (!produtoSelecionado) return;
 
     const qtd = Number(qtdDesejada);
 
     if (qtd <= 0){
-      alert("A quantidade deve ser maior que zero");
-      return;
+      return alert("A quantidade deve ser maior que zero");
     }
 
-    if (produtoSeleciondo.tipo === 'produto' && produtoSeleciondo.qtd <= 0){
-      alert("Produto sem estoque");
-      return;
+    if (produtoSelecionado.tipo === 'produto' && produtoSelecionado.qtd < qtd){
+      return alert(`Estoque insuficiente! Temos apenas ${produtoSelecionado.qtd} unidades.`);
     }
 
-    const itemJaExiste = carrinho.find(item => item.id === produtoSeleciondo.id);
+    const itemJaExiste = carrinho.find(item => item.id === produtoSelecionado.id);
 
     if (itemJaExiste){
       const novaQtdTotal = itemJaExiste.qtdVendida + qtd;
 
-      if(produtoSeleciondo.tipo === 'produto' && novaQtdTotal >= produtoSeleciondo.qtd){
-        alert("Estoque insuficiente para adicionar mais produtos");
-        return;
+      if(produtoSelecionado.tipo === 'produto' && novaQtdTotal >= produtoSelecionado.qtd){
+        return alert("Estoque insuficiente para adicionar mais produtos");
       }
 
       setCarrinho(carrinho.map(item =>
-        item.id === produtoSeleciondo.id
+        item.id === produtoSelecionado.id
         ? {...item, qtdVendida: novaQtdTotal}
         : item
       ));
     }else{
-      setCarrinho([...carrinho, {...produtoSeleciondo, qtdVendida: qtd}]);
+      setCarrinho([...carrinho, {...produtoSelecionado, qtdVendida: qtd}]);
     }
 
     setBusca("");
@@ -89,22 +83,27 @@ const Vendas = () => {
 
   const handleFinalizarVenda = () => {
     if(carrinho.length === 0){
-      alert("O carrinho está vazio");
-      return;
+      return alert("O carrinho está vazio");
     }
-    if(!formaPagmento){
-      alert("Selecione uma forma de pagamento");
-      return;
+    if(!formaPagamento){
+      return alert("Selecione uma forma de pagamento");
     }
 
-    finalizarVenda(carrinho, formaPagmento, totalCompra);
+    finalizarVenda(carrinho, formaPagamento, totalFinal, desconto);
 
     alert("Venda finalizada com sucesso. Estoque atualizado.");
     setCarrinho([]);
     setFormaPagamento("");
+    setDesconto(0);
   };
 
-  const totalCompra = carrinho.reduce((acc, item) => acc + (item.preco * item.qtdVendida), 0);
+  const subTotal = useMemo(() => {
+    return carrinho.reduce((acc, item) => acc + (item.preco * item.qtdVendida), 0);
+  }, [carrinho]);
+
+  const totalFinal = useMemo(() => {
+    return Math.max(0, subTotal - (desconto || 0));
+  }, [subTotal, desconto]);
 
   const paymentOptions = [
     { value: "dinheiro", label: "Dinheiro" },
@@ -135,7 +134,7 @@ const Vendas = () => {
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-4">
             <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Detalhes do Item</h2>
-            <ProductDetailsCard product={produtoSeleciondo}/>
+            <ProductDetailsCard product={produtoSelecionado}/>
             <div className="flex gap-4 items-end mt-2">
               <div className="w-32">
                 <Input
@@ -144,13 +143,13 @@ const Vendas = () => {
                   min={1}
                   value={qtdDesejada}
                   onChange={(e) => setQtdDesejada(parseInt(e.target.value))}
-                  disabled={!produtoSeleciondo}
+                  disabled={!produtoSelecionado}
                 />
               </div>
               <Button
                 variant="primary"
                 className="flex-1"
-                disabled={!produtoSeleciondo}
+                disabled={!produtoSelecionado}
                 onClick={handleAdicionarAoCarrinho}
               >
                 Adicionar ao Carrinho
@@ -176,22 +175,42 @@ const Vendas = () => {
           </div>
 
           <div className="border-t border-gray-200 pt-4 flex flex-col gap-4">
-            <div className="flex justify-between items-center bg-amber-50 p-4 rounded-mb border border-amber-100">
-              <span className="text-lg font-semibold text-gray-700">Total:</span>
+            <div>
+              <div className="flex justify-between items-center text-gray-500">
+                <span>Subtotal:</span>
+                <span>R$ {subTotal.toFixed(2).replace(".", ",")}</span>
+              </div>
+              <div className="flex justify-between items-center gap-4">
+                <div className="w-1/3">
+                  <Input
+                    label="Desconto (R$):"
+                    type="number"
+                    min={0}
+                    step="1.00"
+                    value={desconto || ""}
+                    onChange={(e) => setDesconto(parseFloat(e.target. value) || 0)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Select 
+                    label="Forma de Pagamento" 
+                    options={paymentOptions}
+                    value={formaPagamento}
+                    onChange={(e) => setFormaPagamento(e.target.value)} 
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center bg-amber-50 p-4 rouneded-md border border-amber-100 mt-2">
+              <span className="text-lg font-semibold text-gray-700">Total a pagar:</span>
               <span className="text-2xl font-bold text-amber-700">
-                R$ {totalCompra.toFixed(2).replace(".", ",")}
+                R$ {totalFinal.toFixed(2).replace(",", ".")}
               </span>
             </div>
-            <Select 
-              label="Forma de Pagamento" 
-              options={paymentOptions}
-              value={formaPagmento}
-              onChange={(e) => setFormaPagamento(e.target.value)} 
-            />
-            <Button variant="success" size="lg" className="w-full mt-2" onClick={handleFinalizarVenda}>
+            <Button variant="success" size="lg" className="w-full" onClick={handleFinalizarVenda}>
               Finalizar Venda
             </Button>
-          </div>
+          </div>   
         </section>
       </div>
       <ConfirmModal
