@@ -31,6 +31,15 @@ export type FormCadastro = {
     qtd: string;
 };
 
+export type Cargo = 'dev' | 'gerente' | 'vendedor';
+
+export type Usuario = {
+    id: string;
+    nome: string;
+    username: string;
+    cargo: Cargo;
+}
+
 interface AppContextType {
     produtos: Produto[];
     vendasRealizadas: Venda[];
@@ -54,6 +63,10 @@ interface AppContextType {
     atualizarPreco: (id: string, novoPreco: number) => void;
     atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => void;
     finalizarVenda: (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => void;
+
+    usuarioLogado: Usuario | null;
+    fazerLogin: (username: string, senha: string) => boolean;
+    fazerLogout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -78,6 +91,11 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const [formCadastro, setFormCadastro] = useState<FormCadastro>({
         nome: "", preco: "", tipo: "produto", qtd: ""
     })
+
+    const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(() => {
+        const salvo = localStorage.getItem("@pdv:usuario");
+        return salvo ? JSON.parse(salvo) : null;
+    });
 
     useEffect (() => {
         localStorage.setItem("@pdv:produtos", JSON.stringify(produtos));
@@ -128,10 +146,33 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         setVendasRealizadas((prev) => [novaVenda, ...prev]);
     };
 
+    const usuariosMock = [
+        {id: '1', nome: 'Saimon', username: 'saimon', senha: '123', cargo: 'gerente' as Cargo},
+        {id: '2', nome: 'Guilherme', username: 'guilherme', senha: '123', cargo: 'dev' as Cargo},
+        {id: '3', nome: 'Erlany', username: 'erlany', senha: '123', cargo: 'gerente' as Cargo},
+        {id: '3', nome: 'Juliana', username: 'juliana', senha: '123', cargo: 'vendedor' as Cargo},
+    ];
+
+    const fazerLogin = (user: string, pass: string) => {
+        const usuario = usuariosMock.find(u => u.username === user && u.senha === pass);
+        if (usuario) {
+            const dadosSalvos = {id: usuario.id, nome: usuario.nome, username: usuario.username, cargo: usuario.cargo};
+            setUsuarioLogado(dadosSalvos);
+            localStorage.setItem("@pdv:usuario", JSON.stringify(dadosSalvos));
+            return true;
+        }
+        return false;
+    };
+
+    const fazerLogout = () => {
+        setUsuarioLogado(null);
+        localStorage.removeItem("@pdv:usuario");
+    }
+
     return (
         <AppContext.Provider 
             value={{
-                produtos, vendasRealizadas, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda, carrinho, setCarrinho, formaPagamento, setFormaPagamento, desconto, setDesconto, buscaVendas, setBuscaVendas, buscaAtualizacao, setBuscaAtualizacao, formCadastro, setFormCadastro
+                produtos, vendasRealizadas, adicionarProduto, removerProduto, atualizarPreco, atualizarEstoque, finalizarVenda, carrinho, setCarrinho, formaPagamento, setFormaPagamento, desconto, setDesconto, buscaVendas, setBuscaVendas, buscaAtualizacao, setBuscaAtualizacao, formCadastro, setFormCadastro, usuarioLogado, fazerLogin, fazerLogout
                 }}
             >
             {children}

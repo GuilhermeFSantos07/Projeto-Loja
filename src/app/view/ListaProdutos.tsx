@@ -38,7 +38,7 @@ const ListaProdutos = () => {
             <span>Nome</span>
             <span>Valor</span>
             <span>Quantidade</span>
-            <span>Ações</span>
+            <span className="text-center">Ações</span>
         </div>
 
         <div className="min-w-175 flex flex-col gap-3">
