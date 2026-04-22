@@ -42,20 +42,19 @@ const Header = () => {
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Usuário:</span>
                         <span className="text-sm font-semibold text-gray-700">{usuarioLogado.nome}</span>
                     </div>
-                    <div>
+                    <div className="flex items-center gap-3">
                         <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold uppercase">
                             {usuarioLogado.cargo}
                         </span>
-                        <Button
-                            variant="danger"
-                            size="md"
+                        <button 
                             onClick={fazerLogout}
+                            className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors underline decoration-red-300"
                         >
-                            SAIR
-                        </Button>
+                          SAIR
+                        </button>
                     </div>
                 </div>
-                <div>
+                <div className="flex md:hidden items-center gap-2 mt-2 text-xs border-t pt-2 w-full justify-center">
                     <span className="text-gray-500">Logado como: <b>{usuarioLogado.nome}</b></span>
                     <button onClick={fazerLogout} className="text-red-500 font-bold ml-2">SAIR</button>
                 </div>
