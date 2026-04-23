@@ -20,11 +20,10 @@ const Header = () => {
                 <div className="w-full flex justify-between items-center md:w-auto">
                     <div className="flex items-center gap-2 cursor-pointer">
                         <img
-                            src=""
+                            src="../../../public/assets/logo.png"
                             alt="Logo"
                             className="h-10 w-auto bg-gray-200 rounded text-transparent"
                         />
-                        <span className="font-bold text-amber-700 hidden sm:block">PDV SAIMON</span>
                     </div>
                     <button
                         className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded border border-gray-200"
