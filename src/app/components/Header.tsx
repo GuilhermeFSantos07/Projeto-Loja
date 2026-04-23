@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
-import Button from "./Button";
 
 const Header = () => {
     const[isMenuOpen, setMenuOpen] = useState(false);
