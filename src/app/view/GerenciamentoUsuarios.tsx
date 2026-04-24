@@ -9,9 +9,25 @@ const GerenciamentoUsuarios = () => {
     const [senha, setSenha] = useState("");
     const [cargo, setCargo] = useState("vendedor");
 
-    const handleCriar = () => {
-        alert (`Usuário ${nome} criado como ${cargo}!`);
-        setNome(""); setUser(""); setSenha("");
+    const handleCriar = async () => {
+        try{
+            const res = await fetch ('http://localhost:5000/api/auth/registrar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome, username: user, senha, cargo})
+            })
+
+            if(res.ok){
+                alert(`Usuário ${nome} criado com sucesso no banco de dados`);
+                setNome(""); setUser(""); setSenha(""); setCargo("vendedor");
+            }else{
+                const err = await res.json();
+                alert(`Erro ao criar: ${err.message || "Falha na requisição"}`);
+            }
+        }catch(error){
+            console.error(error);
+            alert("Erro de conexão com o servidor");
+        }
     };
 
     return(
