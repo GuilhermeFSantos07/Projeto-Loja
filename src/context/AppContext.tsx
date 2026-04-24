@@ -65,7 +65,7 @@ interface AppContextType {
     finalizarVenda: (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => void;
 
     usuarioLogado: Usuario | null;
-    fazerLogin: (username: string, senha: string) => boolean;
+    fazerLogin: (username: string, senha: string) => Promise<boolean>;
     fazerLogout: () => void;
 }
 
@@ -146,22 +146,37 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         setVendasRealizadas((prev) => [novaVenda, ...prev]);
     };
 
-    const usuariosMock = [
-        {id: '1', nome: 'Saimon', username: 'saimon', senha: '123', cargo: 'gerente' as Cargo},
-        {id: '2', nome: 'Guilherme', username: 'guilherme', senha: '123', cargo: 'dev' as Cargo},
-        {id: '3', nome: 'Erlany', username: 'erlany', senha: '123', cargo: 'gerente' as Cargo},
-        {id: '3', nome: 'Juliana', username: 'juliana', senha: '123', cargo: 'vendedor' as Cargo},
-    ];
 
-    const fazerLogin = (user: string, pass: string) => {
-        const usuario = usuariosMock.find(u => u.username === user && u.senha === pass);
-        if (usuario) {
-            const dadosSalvos = {id: usuario.id, nome: usuario.nome, username: usuario.username, cargo: usuario.cargo};
-            setUsuarioLogado(dadosSalvos);
-            localStorage.setItem("@pdv:usuario", JSON.stringify(dadosSalvos));
-            return true;
+    const fazerLogin = async (user: string, pass: string): Promise<boolean> => {
+        try{
+            const resposta = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: user, senha: pass})
+            });
+
+            if (resposta.ok){
+                const dados = await resposta.json();
+
+                const dadosSalvos: Usuario = {
+                    id: dados.user._id,
+                    nome: dados.user.nome,
+                    username: dados.user.username,
+                    cargo: 'dev'
+                };
+
+                setUsuarioLogado(dadosSalvos);
+
+                localStorage.setItem("@pdv:usuario", JSON.stringify(dadosSalvos));
+                localStorage.setItem("@pdv:token", dados.token);
+
+                return true;
+            }
+            return false;
+        }catch(error){
+            console.error("Erro ao conectar com a API: ", error);
+            return false;
         }
-        return false;
     };
 
     const fazerLogout = () => {
