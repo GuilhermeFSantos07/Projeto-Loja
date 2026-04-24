@@ -10,14 +10,15 @@ const Login = () => {
     const [erro, setErro] = useState(false)
 
     const {fazerLogin} = useAppContext();
-    const navigete = useNavigate();
+    const navigate = useNavigate();
 
-    const handleEntrar = (e: React.FormEvent) => {
+    const handleEntrar = async (e: React.FormEvent) => {
         e.preventDefault();
-        const sucesso = fazerLogin (username, senha);
+
+        const sucesso = await fazerLogin(username, senha);
 
         if (sucesso) {
-            navigete ("/vendas");
+            navigate ("/vendas");
         } else {
             setErro(true);
         }
