@@ -58,10 +58,10 @@ interface AppContextType {
     formCadastro: FormCadastro;
     setFormCadastro: React.Dispatch<React.SetStateAction<FormCadastro>>;
 
-    adicionarProduto: (p: Produto) => void;
-    removerProduto: (id: string) => void;
-    atualizarPreco: (id: string, novoPreco: number) => void;
-    atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => void;
+    adicionarProduto: (p: Produto) => Promise<boolean>;
+    removerProduto: (id: string) => Promise<void>;
+    atualizarPreco: (id: string, novoPreco: number) => Promise<void>;
+    atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => Promise<void>;
     finalizarVenda: (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => void;
 
     usuarioLogado: Usuario | null;
@@ -72,10 +72,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({children}: {children: ReactNode}) => {
-    const [produtos, setProdutos] = useState<Produto[]>(() => {
-        const saved = localStorage.getItem("@pdv:produtos");
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [produtos, setProdutos] = useState<Produto[]>([]);
 
     const [vendasRealizadas, setVendasRealizadas] = useState<Venda[]>(() => {
         const saved = localStorage.getItem("@pdv:vendas");
@@ -98,31 +95,89 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     });
 
     useEffect (() => {
-        localStorage.setItem("@pdv:produtos", JSON.stringify(produtos));
-    },[produtos]);
+        const carregarProdutos = async () => {
+            try{
+                const res = await fetch ("http://localhost:5000/api/produtos");
+                if (res.ok){
+                    const dados = await res.json();
+                    const produtosMapeados = dados.map((p: any) => ({...p, id: p._id}));
+                    setProdutos(produtosMapeados);
+                }
+            }catch(error){
+                console.error("Erro ao buscar produtos da API:", error);
+            }
+        };
+        carregarProdutos();
+    },[]);
 
     useEffect (() => {
         localStorage.setItem("@pdv:vendas", JSON.stringify(vendasRealizadas));
     },[vendasRealizadas]);
 
-    const adicionarProduto = (p: Produto) => {
-        setProdutos((prev) => [...prev, p]);
+    const adicionarProduto = async (p: Produto): Promise<boolean> => {
+        try{
+            const res = await fetch('http://localhost:5000/api/produtos',{
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome: p.nome, preco: p.preco, tipo: p.tipo, qtd: p.qtd})
+            });
+            if(res.ok){
+                const produtoCriado = await res.json();
+                setProdutos((prev) => [...prev, {...produtoCriado, id: produtoCriado._id}]);
+                return true;
+            }
+            return false;
+        }catch(error){
+            console.error("Erro ao cadastrar produto:", error);
+            return false;
+        }
     };
 
-    const removerProduto = (id: string) => {
-        setProdutos((prev) => prev.filter((p) => p.id !== id));
+    const removerProduto = async (id: string) => {
+        try{
+            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {method: 'DELETE'});
+            if (res.ok){
+                setProdutos((prev) => prev.filter((p) => p.id !== id));
+            }
+        }catch(error){
+            console.error("Erro ao remover produto:", error);
+        }
     };
 
-    const atualizarPreco = (id: string, novoPreco: number) => {
-        setProdutos((prev) => prev.map((p) => p.id === id ? {...p, preco: novoPreco} : p));
+    const atualizarPreco = async (id: string, novoPreco: number) => {
+        try{
+            const res = await fetch (`http://localhost:5000/api/produtos/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({preco: novoPreco})
+            });
+            if(res.ok){
+                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, preco: novoPreco} : p));
+            }
+        }catch(error){
+            console.error("Erro ao atualizar preço:", error);
+        }
     };
 
-    const atualizarEstoque = (id: string, valor: number, operacao: 'somar' | 'substituir') => {
-        setProdutos((prev) => prev.map((p) => {
-            if (p.id !== id) return p;
-            const novaQtd = operacao === 'somar' ? p.qtd + valor : valor;
-            return {...p, qtd: novaQtd < 0 ? 0 : novaQtd};
-        }));
+    const atualizarEstoque = async (id: string, valor: number, operacao: 'somar' | 'substituir') => {
+        const produto = produtos.find(p => p.id === id);
+        if(!produto) return;
+
+        const novaQtd = operacao === 'somar' ? produto.qtd + valor : valor;
+        const qtdFinal = novaQtd < 0 ? 0 : novaQtd;
+
+        try{
+            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({qtd: qtdFinal})
+            });
+            if(res.ok){
+                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, qtd: qtdFinal} : p));
+            }
+        }catch (error) {
+            console.error("Erro ao atualizar estoque:", error);
+        }
     }
 
     const finalizarVenda = (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => {
@@ -182,6 +237,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const fazerLogout = () => {
         setUsuarioLogado(null);
         localStorage.removeItem("@pdv:usuario");
+        localStorage.removeItem("@pdv:toekn");
     }
 
     return (
