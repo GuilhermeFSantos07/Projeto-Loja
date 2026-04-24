@@ -28,27 +28,28 @@ const CadastroAtualizacao = () => {
             setBuscaAtualizacao(location.state.idParaEditar);
             handleBuscarParaEdicao(location.state.idParaEditar);
         }
-    }, [location]);
+    }, [location, produtos]);
 
-    const handleCadastrar = () => {
+    const handleCadastrar = async () => {
         if(!formCadastro.nome || !formCadastro.preco) {
             alert ("Preencha pelo menos o nome e o preço.");
             return;
         }
 
-        const novoId = Math.floor(1000 + Math.random() * 9000).toString();
-
-        adicionarProduto({
-            id: novoId,
+        const sucesso = await adicionarProduto({
+            id: "",
             nome: formCadastro.nome,
             preco: parseFloat(formCadastro.preco),
-            tipo: formCadastro.tipo as "produto" | "servico",
-            qtd: formCadastro.tipo === "produto" ? parseInt(formCadastro.qtd || "0") : 0,
+            tipo: formCadastro.tipo as "produto" || "servico",
+            qtd: formCadastro.tipo === "produto" ? parseInt(formCadastro.qtd || "0"): 0,
         });
 
-        alert(`Cadastrado com sucesso. Id gerado: ${novoId}`);
-
-        setFormCadastro({nome: "", preco: "", tipo: "produto", qtd: ""});
+        if(sucesso){
+            alert(`Cadastrado com sucesso no banco de dados`);
+            setFormCadastro({nome: "", preco: "", tipo: "produto", qtd: ""});
+        }else{
+            alert("Erro ao tentar cadastrar no banco de dados");
+        }
     }
 
     const handleBuscarParaEdicao = (idBuscado: string) => {
@@ -57,22 +58,22 @@ const CadastroAtualizacao = () => {
             setProdutoEditando(encontrado);
             setNovoPreco(encontrado.preco.toString());
             setInputQtd("");
-        }else{
+        }else if(produtos.length > 0){
             alert("Produto não encontrado")
         }
     };
 
-    const handleSalvarPreco = () => {
+    const handleSalvarPreco = async () => {
         if(produtoEditando && novoPreco){
-            atualizarPreco(produtoEditando.id, parseFloat(novoPreco));
+            await atualizarPreco(produtoEditando.id, parseFloat(novoPreco));
             alert("Preço atualizado com sucesso!");
             handleBuscarParaEdicao(produtoEditando.id);
         }
     }
 
-    const handleAtualizarQtd = (operacao: 'somar' | 'substituir') => {
+    const handleAtualizarQtd = async (operacao: 'somar' | 'substituir') => {
         if (produtoEditando && inputQtd) {
-            atualizarEstoque(produtoEditando.id, parseInt(inputQtd), operacao);
+            await atualizarEstoque(produtoEditando.id, parseInt(inputQtd), operacao);
             alert(`Quantidade ${operacao === 'somar' ? 'adicionada' : 'substituída'} com sucesso`);
             setInputQtd("")
             handleBuscarParaEdicao(produtoEditando.id);
