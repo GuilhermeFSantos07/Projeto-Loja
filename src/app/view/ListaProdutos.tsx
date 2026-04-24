@@ -16,9 +16,9 @@ const ListaProdutos = () => {
         setIsModalOpen(true);
     };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (produtoParaDeletar) {
-          removerProduto(produtoParaDeletar);
+          await removerProduto(produtoParaDeletar);
         }
         setIsModalOpen(false);
         setProdutoParaDeletar(null);
