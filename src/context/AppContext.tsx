@@ -245,7 +245,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const fazerLogout = () => {
         setUsuarioLogado(null);
         localStorage.removeItem("@pdv:usuario");
-        localStorage.removeItem("@pdv:toekn");
+        localStorage.removeItem("@pdv:token");
     }
 
     return (
