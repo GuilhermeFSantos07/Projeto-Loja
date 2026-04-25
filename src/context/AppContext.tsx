@@ -75,10 +75,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({children}: {children: ReactNode}) => {
     const [produtos, setProdutos] = useState<Produto[]>([]);
 
-    const [vendasRealizadas, setVendasRealizadas] = useState<Venda[]>(() => {
-        const saved = localStorage.getItem("@pdv:vendas");
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [vendasRealizadas, setVendasRealizadas] = useState<Venda[]>([]);
 
     const [carrinho, setCarrinho] = useState<ItemVenda[]>([]);
     const [formaPagamento, setFormaPagamento] = useState<string>("");
@@ -96,24 +93,32 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     });
 
     useEffect (() => {
-        const carregarProdutos = async () => {
+        const carregarDadosDoBanco = async () => {
+            const token = localStorage.getItem("@pdv:token");
+            if (!token) return;
+
+            const headers = {'Authorization': `Bearer ${token}`};
+
             try{
-                const res = await fetch ("http://localhost:5000/api/produtos");
-                if (res.ok){
-                    const dados = await res.json();
+                const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
+                if(resProdutos.ok){
+                    const dados = await resProdutos.json();
                     const produtosMapeados = dados.map((p: any) => ({...p, id: p._id}));
                     setProdutos(produtosMapeados);
                 }
-            }catch(error){
-                console.error("Erro ao buscar produtos da API:", error);
+
+                const resVendas = await fetch("http://localhost:5000/api/vendas", {headers});
+                if (resVendas.ok){
+                    const dadosVendas = await resVendas.json();
+                    const vendasMapeadas = dadosVendas.map((v: any) => ({...v, id: v._id}));
+                    setVendasRealizadas(vendasMapeadas);
+                }
+            }catch (error){
+                console.error("Erro ao carregar dados iniciais:", error);
             }
         };
-        carregarProdutos();
+        carregarDadosDoBanco();
     },[]);
-
-    useEffect (() => {
-        localStorage.setItem("@pdv:vendas", JSON.stringify(vendasRealizadas));
-    },[vendasRealizadas]);
 
     const adicionarProduto = async (p: Produto): Promise<boolean> => {
         try{
