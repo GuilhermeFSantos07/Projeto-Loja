@@ -116,17 +116,25 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
     const adicionarProduto = async (p: Produto): Promise<boolean> => {
         try{
+            const token = localStorage.getItem("@pdv:token");
             const res = await fetch('http://localhost:5000/api/produtos',{
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({nome: p.nome, preco: p.preco, tipo: p.tipo, qtd: p.qtd})
             });
             if(res.ok){
-                const produtoCriado = await res.json();
+                const dados = await res.json();
+                const produtoCriado = dados.produto;
                 setProdutos((prev) => [...prev, {...produtoCriado, id: produtoCriado._id}]);
                 return true;
+            }else{
+                const erroMsg = await res.json();
+                console.error("Erro retornado pela API:", erroMsg);
+                return false;
             }
-            return false;
         }catch(error){
             console.error("Erro ao cadastrar produto:", error);
             return false;
