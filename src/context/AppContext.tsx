@@ -62,7 +62,8 @@ interface AppContextType {
     removerProduto: (id: string) => Promise<void>;
     atualizarPreco: (id: string, novoPreco: number) => Promise<void>;
     atualizarEstoque: (id: string, valor: number, operacao: 'somar' | 'substituir') => Promise<void>;
-    finalizarVenda: (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => void;
+
+    finalizarVenda: (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => Promise<boolean>;
 
     usuarioLogado: Usuario | null;
     fazerLogin: (username: string, senha: string) => Promise<boolean>;
@@ -188,25 +189,45 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         }
     }
 
-    const finalizarVenda = (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number) => {
-        setProdutos((prev) => prev.map((p) => {
-            const itemVendido = itens.find(item => item.id === p.id);
-            if (itemVendido && p.tipo === 'produto'){
-                return {...p, qtd: p.qtd - itemVendido.qtdVendida};
+    const finalizarVenda = async (itens: ItemVenda[], metodo: string, total: number, descontoAplicado: number): Promise<boolean> => {
+        try{
+            const itensMapeados = itens.map(item => ({
+                produtoId: item.id,
+                nome: item.nome,
+                precoUnitario: item.preco,
+                quantidadeVendida: item.qtdVendida
+            }));
+
+            const token = localStorage.getItem("@pdv:token");
+            const res = await fetch('http://localhost:5000/api/vendas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify ({
+                    itens: itensMapeados,
+                    valorTotal: total,
+                    metodoPagamento: metodo,
+                    desconto: descontoAplicado
+                })
+            });
+
+            if (res.ok){
+                setProdutos((prev) => prev.map((p) => {
+                    const itemVendido = itens.find(item => item.id === p.id);
+                    if(itemVendido && p.tipo === 'produto'){
+                        return {...p, qtd: p.qtd - itemVendido.qtdVendida};
+                    }
+                    return p;
+                }));
+                return true;
             }
-            return p;
-        }));
-
-        const novaVenda: Venda = {
-            id: `V-${Math.floor(1000 + Math.random() * 9000)}`,
-            data: new Date().toLocaleString('pt-BR'),
-            itens: [...itens],
-            metodoPagamento: metodo,
-            valorTotal: total,
-            desconto: descontoAplicado
-        };
-
-        setVendasRealizadas((prev) => [novaVenda, ...prev]);
+            return false;
+        }catch(error){
+            console.error("Erro ao enviar venda para a API:", error);
+            return false;
+        }
     };
 
 
