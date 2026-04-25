@@ -22,8 +22,13 @@ const Vendas = () => {
   const [itemParaRemover, setItemParaRemover] = useState <string | null>(null);
 
   const handleBuscar = () =>{
-    const encontrado = produtos.find(p => p.id === buscaVendas || p.nome.toLocaleLowerCase() === buscaVendas.toLocaleLowerCase());
-    if (encontrado) {
+    const busca = buscaVendas.trim().toLocaleLowerCase();
+    const encontrado = produtos.find(p => {
+      if (p.id === busca || p.nome.toLocaleLowerCase() === busca) return true;
+      if (p.id.endsWith(busca) && busca.length >= 4) return true;
+      return false;
+    });
+    if (encontrado){
       setProdutoSelecionado(encontrado);
       setQtdDesejada(1);
     }else{
