@@ -144,7 +144,13 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
     const removerProduto = async (id: string) => {
         try{
-            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {method: 'DELETE'});
+            const token = localStorage.getItem("@pdv:token");
+            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (res.ok){
                 setProdutos((prev) => prev.filter((p) => p.id !== id));
             }
@@ -155,9 +161,13 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
     const atualizarPreco = async (id: string, novoPreco: number) => {
         try{
+            const token = localStorage.getItem("@pdv:token");
             const res = await fetch (`http://localhost:5000/api/produtos/${id}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({preco: novoPreco})
             });
             if(res.ok){
@@ -176,9 +186,13 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         const qtdFinal = novaQtd < 0 ? 0 : novaQtd;
 
         try{
+            const token = localStorage.getItem("@pdv:token");
             const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({qtd: qtdFinal})
             });
             if(res.ok){
