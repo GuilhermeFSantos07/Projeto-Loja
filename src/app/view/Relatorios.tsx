@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { useAppContext, type Venda } from "../../context/AppContext"
+import { useAppContext } from "../../context/AppContext"
 import Button from "../components/Button";
 
 const Relatorios = () => {
     const {vendasRealizadas} = useAppContext();
-    const [vendaSelecionada, setVendaSelecionada] = useState<Venda | null>(null);
+    const [vendaSelecionada, setVendaSelecionada] = useState<any | null>(null);
+
+    const formatarData = (dataString: string) => {
+        try{
+            return new Date(dataString).toLocaleString('pt-BR');
+        }catch{
+            return dataString;
+        }
+    }
 
     return(
         <main className="pt-32 pb-10 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
@@ -18,11 +26,11 @@ const Relatorios = () => {
                     <span className="text-right">Ação</span>
                 </div>
                 <div className="min-w-175 flex flex-col gap-3">
-                    {vendasRealizadas?.map((venda) => (
+                    {vendasRealizadas?.map((venda: any) => (
                         <div key={venda.id} className="grid grid-cols-[1.5fr_1fr_1.5fr_1fr_60px] gap-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg items-center">
-                            <span className="text-gray-900 font-medium text-sm">{venda.data}</span>
+                            <span className="text-gray-900 font-medium text-sm">{formatarData(venda.data)}</span>
                             <span className="text-gray-700">
-                                {venda.itens.reduce((acc, item) => acc +item.qtdVendida, 0)} un
+                                {venda.itens.reduce((acc: number, item: any) => acc + (item.quantidadeVendida || item.qtdVendida || 0), 0)} un
                             </span>
                             <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold uppercase w-max">
                                 {venda.metodoPagamento.replace('-', ' ')}
@@ -48,12 +56,17 @@ const Relatorios = () => {
                         <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Detalhes da venda {vendaSelecionada.id}</h3>
                         <p className="text-sm text-gray-500 mb-4">ID: {vendaSelecionada.id}</p>
                         <div className="flex flex-col gap-3 mb-auto max-h-50 overflow-y-auto pr-1">
-                            {vendaSelecionada.itens.map((item, idx) => (
-                                <div key={idx} className="flex justify-between text-sm border-b border-gray-100 pb-1">
-                                    <span>{item.qtdVendida}x {item.nome}</span>
-                                    <span className="font-medium text-gray-600">R$ {(item.preco * item.qtdVendida).toFixed(2)}</span>
-                                </div>
-                            ))}
+                            {vendaSelecionada.itens.map((item: any, idx: number) => {
+                                const qtd = item.quantidadeVendida || item.qtdVendida;
+                                const preco = item.precoUnitario || item.preco;
+
+                                return(
+                                    <div key={idx} className="flex justify-between text-sm border-b border-gray-100 pb-1">
+                                        <span>{qtd}x {item.nome}</span>
+                                        <span className="font-medium text-gray-600">R$ {(preco * qtd).toFixed(2)}</span>
+                                    </div>
+                                )
+                            })}
                         </div>
                         <div className="mt-4 pt-4 border-t border-gray-200">
                             {vendaSelecionada.desconto > 0 && (
