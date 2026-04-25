@@ -97,7 +97,7 @@ const Vendas = () => {
     setItemParaRemover(null);
   }
 
-  const handleFinalizarVenda = () => {
+  const handleFinalizarVenda = async () => {
     if(carrinho.length === 0){
       return alert("O carrinho está vazio");
     }
@@ -105,12 +105,16 @@ const Vendas = () => {
       return alert("Selecione uma forma de pagamento");
     }
 
-    finalizarVenda(carrinho, formaPagamento, totalFinal, desconto);
+    const sucesso = await finalizarVenda(carrinho, formaPagamento, totalFinal, desconto);
 
-    alert("Venda finalizada com sucesso. Estoque atualizado.");
-    setCarrinho([]);
-    setFormaPagamento("");
-    setDesconto(0);
+    if (sucesso){
+      alert("Venda finalizada com sucesso. Estoque foi atualizado");
+      setCarrinho([]);
+      setFormaPagamento("");
+      setDesconto(0);
+    }else{
+      alert("Erro ao registrar a venda no sistema");
+    }
   };
 
   const subTotal = useMemo(() => {
