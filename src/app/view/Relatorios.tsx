@@ -54,7 +54,7 @@ const Relatorios = () => {
                 <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 p-4">
                     <div className="w-full max-w-90 min-h-90 bg-white rounded-xl p-6 shadow-2xl flex flex-col">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Detalhes da venda {vendaSelecionada.id}</h3>
-                        <p className="text-sm text-gray-500 mb-4">ID: {vendaSelecionada.id}</p>
+                        <p className="text-sm text-gray-500 mb-4 font-mono uppercase">Venda #{vendaSelecionada.id.slice(-5)}</p>
                         <div className="flex flex-col gap-3 mb-auto max-h-50 overflow-y-auto pr-1">
                             {vendaSelecionada.itens.map((item: any, idx: number) => {
                                 const qtd = item.quantidadeVendida || item.qtdVendida;

@@ -101,17 +101,25 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
             try{
                 const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
-                if(resProdutos.ok){
+                if (resProdutos.ok){
                     const dados = await resProdutos.json();
-                    const produtosMapeados = dados.map((p: any) => ({...p, id: p._id}));
-                    setProdutos(produtosMapeados);
+                    if (Array.isArray(dados)) {
+                        const produtosMapeados = dados.map((p: any) => ({...p, id: p._id}));
+                        setProdutos(produtosMapeados);
+                    }else{
+                        console.warn("A API de produtos não retornou um array:", dados);
+                    }
                 }
 
                 const resVendas = await fetch("http://localhost:5000/api/vendas", {headers});
                 if (resVendas.ok){
                     const dadosVendas = await resVendas.json();
-                    const vendasMapeadas = dadosVendas.map((v: any) => ({...v, id: v._id}));
-                    setVendasRealizadas(vendasMapeadas);
+                    if (Array.isArray(dadosVendas)){
+                        const vendasMapeadas = dadosVendas.map((v: any) => ({...v, id: v._id}));
+                        setVendasRealizadas(vendasMapeadas);
+                    }else{
+                        console.warn("A API de vendas não retonou um array:", dadosVendas);
+                    }
                 }
             }catch (error){
                 console.error("Erro ao carregar dados iniciais:", error);

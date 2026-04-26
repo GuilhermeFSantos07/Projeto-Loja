@@ -214,7 +214,7 @@ const Vendas = () => {
                     min={0}
                     step="1.00"
                     value={desconto === 0 ? "" : desconto}
-                    onChange={(e) => setDesconto(parseFloat(e.target. value) || 0)}
+                    onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
                   />
                 </div>
                 <div className="flex-1">
@@ -230,7 +230,7 @@ const Vendas = () => {
             <div className="flex justify-between items-center bg-amber-50 p-4 rouneded-md border border-amber-100 mt-2">
               <span className="text-lg font-semibold text-gray-700">Total a pagar:</span>
               <span className="text-2xl font-bold text-amber-700">
-                R$ {totalFinal.toFixed(2).replace(",", ".")}
+                R$ {totalFinal.toFixed(2).replace(".", ",")}
               </span>
             </div>
             <Button variant="success" size="lg" className="w-full" onClick={handleFinalizarVenda}>

@@ -47,7 +47,7 @@ const ListaProdutos = () => {
               key={item.id} 
               className="grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg items-center transition-colors hover:bg-gray-100"
             >
-              <span className="text-gray-700 text-sm">{item.id}</span>
+              <span className="text-gray-700 text-sm font-mono uppercase">#{item.id.slice(-5)}</span>
               <span className="font-bold text-gray-900 truncate" title={item.nome}>{item.nome}</span>
               <span className="text-amber-700 font-bold">
                 R$ {item.preco.toFixed(2).replace(".",",")}
