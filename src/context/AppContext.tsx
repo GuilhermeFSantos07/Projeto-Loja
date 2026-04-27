@@ -101,10 +101,20 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
             try{
                 const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
+
+                if(resProdutos.status ===  401){
+                    fazerLogout();
+                    return
+                }
+
                 if (resProdutos.ok){
                     const dados = await resProdutos.json();
                     if (Array.isArray(dados)) {
-                        const produtosMapeados = dados.map((p: any) => ({...p, id: p._id}));
+                        const produtosMapeados = dados.map((p: any) => ({
+                            ...p, 
+                            id: p._id,
+                            qtd: p.quantidade
+                        }));
                         setProdutos(produtosMapeados);
                     }else{
                         console.warn("A API de produtos não retornou um array:", dados);
@@ -137,7 +147,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({nome: p.nome, preco: p.preco, tipo: p.tipo, qtd: p.qtd})
+                body: JSON.stringify({nome: p.nome, preco: p.preco, tipo: p.tipo, quantidade: p.qtd})
             });
             if(res.ok){
                 const dados = await res.json();
@@ -209,7 +219,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                 body: JSON.stringify({qtd: qtdFinal})
             });
             if(res.ok){
-                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, qtd: qtdFinal} : p));
+                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, quantidade: qtdFinal} : p));
             }
         }catch (error) {
             console.error("Erro ao atualizar estoque:", error);
