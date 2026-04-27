@@ -92,49 +92,51 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         return salvo ? JSON.parse(salvo) : null;
     });
 
-    useEffect (() => {
-        const carregarDadosDoBanco = async () => {
-            const token = localStorage.getItem("@pdv:token");
-            if (!token) return;
+    const carregarDadosDoBanco = async () => {
+        const token = localStorage.getItem("@pdv:token");
+        if (!token) return;
 
-            const headers = {'Authorization': `Bearer ${token}`};
+        const headers = {'Authorization': `Bearer ${token}`};
 
-            try{
-                const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
+        try{
+            const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
 
-                if(resProdutos.status ===  401){
-                    fazerLogout();
-                    return
-                }
-
-                if (resProdutos.ok){
-                    const dados = await resProdutos.json();
-                    if (Array.isArray(dados)) {
-                        const produtosMapeados = dados.map((p: any) => ({
-                            ...p, 
-                            id: p._id,
-                            qtd: p.quantidade
-                        }));
-                        setProdutos(produtosMapeados);
-                    }else{
-                        console.warn("A API de produtos não retornou um array:", dados);
-                    }
-                }
-
-                const resVendas = await fetch("http://localhost:5000/api/vendas", {headers});
-                if (resVendas.ok){
-                    const dadosVendas = await resVendas.json();
-                    if (Array.isArray(dadosVendas)){
-                        const vendasMapeadas = dadosVendas.map((v: any) => ({...v, id: v._id}));
-                        setVendasRealizadas(vendasMapeadas);
-                    }else{
-                        console.warn("A API de vendas não retonou um array:", dadosVendas);
-                    }
-                }
-            }catch (error){
-                console.error("Erro ao carregar dados iniciais:", error);
+            if(resProdutos.status ===  401){
+                fazerLogout();
+                return
             }
-        };
+
+            if (resProdutos.ok){
+                const dados = await resProdutos.json();
+                if (Array.isArray(dados)) {
+                    const produtosMapeados = dados.map((p: any) => ({
+                        ...p, 
+                        id: p._id,
+                        qtd: p.quantidade,
+                        tipo: p.tipo || 'produto'
+                    }));
+                    setProdutos(produtosMapeados);
+                }else{
+                    console.warn("A API de produtos não retornou um array:", dados);
+                }
+            }
+
+            const resVendas = await fetch("http://localhost:5000/api/vendas", {headers});
+            if (resVendas.ok){
+                const dadosVendas = await resVendas.json();
+                if (Array.isArray(dadosVendas)){
+                    const vendasMapeadas = dadosVendas.map((v: any) => ({...v, id: v._id}));
+                    setVendasRealizadas(vendasMapeadas);
+                }else{
+                    console.warn("A API de vendas não retonou um array:", dadosVendas);
+                }
+            }
+        }catch (error){
+            console.error("Erro ao carregar dados iniciais:", error);
+        }
+    };
+
+    useEffect (() => {
         carregarDadosDoBanco();
     },[]);
 
@@ -153,6 +155,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                 const dados = await res.json();
                 const produtoCriado = dados.produto;
                 setProdutos((prev) => [...prev, {...produtoCriado, id: produtoCriado._id}]);
+                await carregarDadosDoBanco();
                 return true;
             }else{
                 const erroMsg = await res.json();
@@ -216,10 +219,11 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({qtd: qtdFinal})
+                body: JSON.stringify({quantidade: qtdFinal})
             });
             if(res.ok){
-                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, quantidade: qtdFinal} : p));
+                setProdutos((prev) => prev.map((p) => p.id === id ? {...p, qtd: qtdFinal} : p));
+                await carregarDadosDoBanco();
             }
         }catch (error) {
             console.error("Erro ao atualizar estoque:", error);
@@ -258,6 +262,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                     }
                     return p;
                 }));
+                await carregarDadosDoBanco();
                 return true;
             }
             return false;
