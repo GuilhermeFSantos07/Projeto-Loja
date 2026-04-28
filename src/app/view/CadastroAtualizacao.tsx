@@ -82,7 +82,7 @@ const CadastroAtualizacao = () => {
 
     const tipoOptions = [
         {value: "produto", label: "Produto"},
-        {value: "serviço", label: "Serviço"},
+        {value: "servico", label: "Serviço"},
     ]
 
     return (
