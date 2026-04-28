@@ -288,7 +288,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                     id: dados.user._id,
                     nome: dados.user.nome,
                     username: dados.user.username,
-                    cargo: 'dev'
+                    cargo: dados.user.cargo
                 };
 
                 setUsuarioLogado(dadosSalvos);
