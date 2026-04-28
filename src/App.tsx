@@ -63,7 +63,7 @@ function App() {
             </PrivateRoute>
           }/>
           <Route path="/usuarios" element={
-            <PrivateRoute>
+            <PrivateRoute cargosPermitidos={['dev']}>
               <>
                 <Header/>
                 <div className="min-h-screen bg-gray-100"><GerenciamentoUsuarios /></div>
