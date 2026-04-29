@@ -99,7 +99,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
         const headers = {'Authorization': `Bearer ${token}`};
 
         try{
-            const resProdutos = await fetch("http://localhost:5000/api/produtos", {headers});
+            const resProdutos = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`, {headers});
 
             if(resProdutos.status ===  401){
                 fazerLogout();
@@ -121,7 +121,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
                 }
             }
 
-            const resVendas = await fetch("http://localhost:5000/api/vendas", {headers});
+            const resVendas = await fetch(`${import.meta.env.VITE_API_URL}/api/vendas`, {headers});
             if (resVendas.ok){
                 const dadosVendas = await resVendas.json();
                 if (Array.isArray(dadosVendas)){
@@ -143,7 +143,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const adicionarProduto = async (p: Produto): Promise<boolean> => {
         try{
             const token = localStorage.getItem("@pdv:token");
-            const res = await fetch('http://localhost:5000/api/produtos',{
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const removerProduto = async (id: string) => {
         try{
             const token = localStorage.getItem("@pdv:token");
-            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -188,7 +188,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
     const atualizarPreco = async (id: string, novoPreco: number) => {
         try{
             const token = localStorage.getItem("@pdv:token");
-            const res = await fetch (`http://localhost:5000/api/produtos/${id}`, {
+            const res = await fetch (`${import.meta.env.VITE_API_URL}/api/produtos/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
         try{
             const token = localStorage.getItem("@pdv:token");
-            const res = await fetch(`http://localhost:5000/api/produtos/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
             }));
 
             const token = localStorage.getItem("@pdv:token");
-            const res = await fetch('http://localhost:5000/api/vendas', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vendas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,7 +275,7 @@ export const AppProvider = ({children}: {children: ReactNode}) => {
 
     const fazerLogin = async (user: string, pass: string): Promise<boolean> => {
         try{
-            const resposta = await fetch('http://localhost:5000/api/auth/login', {
+            const resposta = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username: user, senha: pass})
