@@ -7,6 +7,7 @@ import ListaProdutos from "./app/view/ListaProdutos";
 import CadastroAtualizacao from "./app/view/CadastroAtualizacao";
 import Relatorios from "./app/view/Relatorios";
 import GerenciamentoUsuarios from "./app/view/GerenciamentoUsuarios";
+import type { JSX } from "react";
 
 
 const PrivateRoute = ({children, cargosPermitidos}:{children: JSX.Element, cargosPermitidos?: string[]}) => {
