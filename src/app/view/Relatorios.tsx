@@ -18,14 +18,18 @@ const Relatorios = () => {
         <main className="pt-32 pb-10 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Relatório de Vendas</h2>
-                <div className="min-w-175 grid grid-cols-[1.5fr_1fr_1.5fr_1fr_60px] gap-4 px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4">
-                    <span>Data / Hora</span>
-                    <span>Itens</span>
-                    <span>Pagamento</span>
-                    <span>Total</span>
-                    <span className="text-right">Ação</span>
+                <div className="overflow-x-auto w-full pb-4">
+                    <div className="min-w-[750px]">
+                        <div className="grid grid-cols-[1.5fr_1fr_1.5fr_1fr_60px] gap-4 px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4">
+                            <span>Data / Hora</span>
+                            <span>Itens</span>
+                            <span>Pagamento</span>
+                            <span>Total</span>
+                            <span className="text-right">Ação</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="min-w-175 flex flex-col gap-3">
+                <div className="flex flex-col gap-3">
                     {vendasRealizadas?.map((venda: any) => (
                         <div key={venda.id} className="grid grid-cols-[1.5fr_1fr_1.5fr_1fr_60px] gap-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg items-center">
                             <span className="text-gray-900 font-medium text-sm">{formatarData(venda.data)}</span>

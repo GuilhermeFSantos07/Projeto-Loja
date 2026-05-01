@@ -32,16 +32,17 @@ const ListaProdutos = () => {
     <main className="pt-32 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Lista de Produtos e Serviços</h2>
-
-        <div className="min-w-175 grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4">
+        <div className="overflow-x-auto w-full pb-2">
+          <div className="min-w-[700px] grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 mb-4">
             <span>Código</span>
             <span>Nome</span>
             <span>Valor</span>
             <span>Quantidade</span>
             <span className="text-center">Ações</span>
+          </div>
         </div>
 
-        <div className="min-w-175 flex flex-col gap-3">
+        <div className="min-w-[700px] flex flex-col gap-3">
           {produtos.map((item) => (
             <div 
               key={item.id} 

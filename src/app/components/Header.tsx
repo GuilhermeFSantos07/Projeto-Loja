@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
+import logo from "../assets/logo.png";
 
 const Header = () => {
     const[isMenuOpen, setMenuOpen] = useState(false);
@@ -20,7 +21,7 @@ const Header = () => {
                 <div className="w-full flex justify-between items-center md:w-auto">
                     <div className="flex items-center gap-2 cursor-pointer">
                         <img
-                            src="/src/app/assets/logo.png"
+                            src={logo}
                             alt="Logo"
                             className="h-10 w-auto bg-gray-200 rounded text-transparent"
                         />
