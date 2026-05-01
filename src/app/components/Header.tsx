@@ -20,7 +20,7 @@ const Header = () => {
                 <div className="w-full flex justify-between items-center md:w-auto">
                     <div className="flex items-center gap-2 cursor-pointer">
                         <img
-                            src="../../../public/assets/logo.png"
+                            src="/src/app/assets/logo.png"
                             alt="Logo"
                             className="h-10 w-auto bg-gray-200 rounded text-transparent"
                         />
