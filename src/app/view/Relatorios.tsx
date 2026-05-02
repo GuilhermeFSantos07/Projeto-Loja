@@ -14,10 +14,28 @@ const Relatorios = () => {
         }
     }
 
+    const vendasHoje = vendasRealizadas?.filter((venda: any) => {
+        const dataVenda = new Date(venda.data);
+        const hoje = new Date();
+        return dataVenda.getDate() === hoje.getDate() && 
+               dataVenda.getMonth() === hoje.getMonth() &&
+               dataVenda.getFullYear() === hoje.getFullYear();
+    }) || [];
+
+    const valorTotalHoje = vendasHoje.reduce((acc: number, venda: any) => acc + venda.valorTotal, 0);
+    const qtdVendasHoje = vendasHoje.length; 
+
     return (
         <main className="pt-6 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Relatório de Vendas</h2>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-6 gap-4">
+                    <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-6">Relatório de Vendas</h2>
+                    {vendasRealizadas && (
+                        <button className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-emerald-100 transition-colors flex items-center gap-2">
+                            <span>💰</span> Hoje: R$ {valorTotalHoje.toFixed(2).replace(".",",")} ({qtdVendasHoje} vendas)
+                        </button>
+                    )}
+                </div>
                 {!vendasRealizadas ? (
                      <div className="flex flex-col items-center justify-center py-12 gap-3">
                         <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
