@@ -31,7 +31,7 @@ const GerenciamentoUsuarios = () => {
     };
 
     return(
-        <main className="pt-32 pb-10 px-4 max-w-4xl mx-auto">
+        <main className="pt-6 pb-10 px-4 max-w-4xl mx-auto">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h2 className="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Criar Novo Acesso</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

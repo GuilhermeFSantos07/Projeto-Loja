@@ -139,7 +139,7 @@ const Vendas = () => {
   
 
   return (
-    <main className="pt-32 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
+    <main className="pt-6 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <section className="w-full lg:w-1/2 flex flex-col gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-4">
