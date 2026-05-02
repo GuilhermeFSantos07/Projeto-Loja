@@ -12,26 +12,39 @@ const ListaProdutos = () => {
     const [produtoParaDeletar, setProdutoParaDeletar] = useState<string | null>(null);
 
     const handleOpenDeleteModal = (id: string) => {
-        setProdutoParaDeletar(id);
-        setIsModalOpen(true);
+      setProdutoParaDeletar(id);
+      setIsModalOpen(true);
     };
 
     const handleConfirmDelete = async () => {
-        if (produtoParaDeletar) {
-          await removerProduto(produtoParaDeletar);
-        }
-        setIsModalOpen(false);
-        setProdutoParaDeletar(null);
+      if (produtoParaDeletar) {
+        await removerProduto(produtoParaDeletar);
+      }
+      setIsModalOpen(false);
+      setProdutoParaDeletar(null);
     };
 
     const handleEditar = (id: string) => {
       navigate('/cadastro', {state: {idParaEditar: id}});
     }
 
+    const totalEstoque = produtos?.reduce((acc, item) => {
+      return acc + (item.tipo === 'servico' ? 0 : Number(item.qtd || 0));
+    }, 0 || 0);
+
+    const produtosOrdenados = produtos ? [...produtos].sort((a,b) => a.nome.localeCompare(b.nome)) : [];
+
   return (
     <main className="pt-6 pb-10 px-4 sm:px-6 w-full max-w-7xl mx-auto min-h-screen">
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-4">Lista de Produtos e Serviços</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4 gap-4">
+          <h2 className="text-xl font-semibold text-gray-800 border-b pb-4 mb-4">Lista de Produtos e Serviços</h2>
+          {produtos && (
+            <button className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-amber-100 transition-colors flex items-center gap-2">
+              <span>📦</span> Total em Estoque: {totalEstoque} und
+            </button>
+          )}
+        </div>
         {!produtos ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
              <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
@@ -48,8 +61,8 @@ const ListaProdutos = () => {
                 <span className="text-center">Ações</span>
               </div>
               <div className="flex flex-col gap-3">
-                {produtos.map((item) => (
-                  <div 
+                {produtosOrdenados.map((item) => (
+                  <div
                     key={item.id} 
                     className="grid grid-cols-[1fr_2fr_1fr_1fr_120px] gap-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg items-center transition-colors hover:bg-gray-100"
                   >
